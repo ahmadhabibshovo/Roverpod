@@ -6,6 +6,24 @@ void main() {
   runApp(ProviderScope(child: const MyApp()));
 }
 
+enum City { dhaka, paris, tokyo }
+
+typedef WeatherEmoji = String;
+
+Future<WeatherEmoji> getWeather(City city) {
+  return Future.delayed(Duration(seconds: 2), () {
+    return {City.dhaka: "🌦️", City.paris: "🌞", City.tokyo: "❄️"}[city]!;
+  });
+}
+
+final cityProvider = StateProvider<City?>((ref) => null);
+
+final weatherProvider = FutureProvider<WeatherEmoji>((ref) {
+  final city = ref.watch(cityProvider);
+
+  return city == null ? "Unkonwn City" : getWeather(city);
+});
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -38,7 +56,38 @@ class MyHomePage extends ConsumerWidget {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [],
+          children: [
+            Padding(
+              padding: EdgeInsetsGeometry.all(8),
+              child: ref
+                  .watch(weatherProvider)
+                  .when(
+                    data: (data) {
+                      return Text(data);
+                    },
+                    error: (obj, tracre) {
+                      Text("Something Wrong");
+                    },
+                    loading: () => Center(child: CircularProgressIndicator()),
+                  ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: City.values.length,
+                itemBuilder: (context, index) {
+                  final selectedCity = ref.watch(cityProvider);
+                  return ListTile(
+                    onTap: () => ref.read(cityProvider.notifier).state =
+                        City.values[index],
+                    title: Text(City.values[index].toString()),
+                    trailing: selectedCity == City.values[index]
+                        ? Icon(Icons.check)
+                        : null,
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
