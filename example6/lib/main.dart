@@ -37,7 +37,7 @@ class Film extends Equatable {
     this.isFavorite = false,
   });
 
-  Film copy({bool? isFavorite}) {
+  Film copyWith({bool? isFavorite}) {
     return Film(
       id: id,
       title: title,
@@ -55,7 +55,7 @@ class Film extends Equatable {
   List<Object?> get props => [id, title, description, isFavorite];
 }
 
-final allFilms = [
+const List<Film> initialFilms = [
   Film(
     id: '1',
     title: 'The Shawshank Redemption',
@@ -89,10 +89,16 @@ final allFilms = [
 ];
 
 class FilmNotifier extends StateNotifier<List<Film>> {
-  FilmNotifier() : super(allFilms);
+  FilmNotifier() : super(initialFilms);
 
-  void toggleFavorite(int index) {
-    state[index] = state[index].copy(isFavorite: !state[index].isFavorite);
+  void toggleFavorite(String id) {
+    state = state
+        .map(
+          (film) => film.id == id
+              ? film.copyWith(isFavorite: !film.isFavorite)
+              : film,
+        )
+        .toList();
   }
 }
 
@@ -109,7 +115,6 @@ class MyHomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
       length: 2,
-
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -117,14 +122,14 @@ class MyHomePage extends ConsumerWidget {
         ),
         body: Column(
           children: [
-            TabBar(
+            const TabBar(
               tabs: [
                 Tab(text: 'All Films'),
                 Tab(text: 'Favorite Films'),
               ],
             ),
-            Expanded(
-              child: TabBarView(children: [FilmList(onToggleFavorite: ref.read(filmProvider.notifier).toggleFavorite  ), FavoriteFilmList()]),
+            const Expanded(
+              child: TabBarView(children: [FilmList(), FavoriteFilmList()]),
             ),
           ],
         ),
@@ -133,28 +138,22 @@ class MyHomePage extends ConsumerWidget {
   }
 }
 
-class FilmList extends StatelessWidget {
-  List<Film> get films => allFilms;
-  final onToggleFavorite;
-  const FilmList({super.key, required this.onToggleFavorite});
+class FilmList extends ConsumerWidget {
+  const FilmList({super.key});
 
   @override
-  Widget build(BuildContext context, ) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final films = ref.watch(filmProvider);
+
     return ListView.builder(
       itemCount: films.length,
       itemBuilder: (context, index) {
         final film = films[index];
-        return ListTile(
-          title: Text(film.title),
-          subtitle: Text(film.description),
-          trailing: IconButton(
-            icon: Icon(
-              film.isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: film.isFavorite ? Colors.red : null,
-            ),
-            onPressed: () =>
-                ref.read(filmProvider.notifier).toggleFavorite(index),
-          ),
+        return FilmTile(
+          film: film,
+          onToggleFavorite: () {
+            ref.read(filmProvider.notifier).toggleFavorite(film.id);
+          },
         );
       },
     );
@@ -168,24 +167,44 @@ class FavoriteFilmList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final films = ref.watch(filmProvider);
     final favoriteFilms = films.where((film) => film.isFavorite).toList();
+
     return ListView.builder(
       itemCount: favoriteFilms.length,
       itemBuilder: (context, index) {
         final film = favoriteFilms[index];
-        return ListTile(
-          title: Text(film.title),
-          subtitle: Text(film.description),
-          trailing: IconButton(
-            icon: Icon(
-              film.isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: film.isFavorite ? Colors.red : null,
-            ),
-            onPressed: () => ref
-                .read(filmProvider.notifier)
-                .toggleFavorite(films.indexOf(film)),
-          ),
+        return FilmTile(
+          film: film,
+          onToggleFavorite: () {
+            ref.read(filmProvider.notifier).toggleFavorite(film.id);
+          },
         );
       },
+    );
+  }
+}
+
+class FilmTile extends StatelessWidget {
+  final Film film;
+  final VoidCallback onToggleFavorite;
+
+  const FilmTile({
+    super.key,
+    required this.film,
+    required this.onToggleFavorite,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(film.title),
+      subtitle: Text(film.description),
+      trailing: IconButton(
+        icon: Icon(
+          film.isFavorite ? Icons.favorite : Icons.favorite_border,
+          color: film.isFavorite ? Colors.red : null,
+        ),
+        onPressed: onToggleFavorite,
+      ),
     );
   }
 }
