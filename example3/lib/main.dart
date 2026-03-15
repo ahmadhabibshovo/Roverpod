@@ -67,6 +67,7 @@ class MyHomePage extends ConsumerWidget {
                     },
                     error: (obj, tracre) {
                       Text("Something Wrong");
+                      return null;
                     },
                     loading: () => Center(child: CircularProgressIndicator()),
                   ),
