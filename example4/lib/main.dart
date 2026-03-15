@@ -36,12 +36,11 @@ const names = [
 ];
 
 final tickerProvider = StreamProvider(
-  (ref) => Stream.periodic(const Duration(seconds: 1), (i) => i + 1),
+  (ref) => Stream.periodic(const Duration(seconds: 1), (i) => i + 1).take(26),
 );
 
 final namesProvider = StreamProvider((ref) {
   return ref.watch(tickerProvider.future).asStream().map((data) {
-    print("data : ${data}");
     return names.getRange(0, data);
   });
 });
