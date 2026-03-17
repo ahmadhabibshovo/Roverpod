@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "767702783174",
+    "project_id": "firegram-67fe8",
+    "storage_bucket": "firegram-67fe8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:767702783174:android:257ce46aa272bf4ab0f3c7",
+        "android_client_info": {
+          "package_name": "com.firegram.app.firegram"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBO0msfBodwzE5uhH-8lc8nJYrrAhQEB7U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
